@@ -132,30 +132,3 @@ SJV.WaterTable =
 # write data
 save(SJV.WaterTable, 
      file = here::here('geospatial_data','SJVwaterTable.Rda'))
-
-
-# gw qual -----------------------------------------------------------------
-
-GAMA_WQ = 
-  fs::dir_ls(here::here('geochemical_data/GW_data/'),
-             regexp = '*.txt', recurse = FALSE) %>%
-  map_dfr(~read_tsv(., col_names = TRUE) %>%
-            filter(str_detect(GM_CHEMICAL_NAME, 
-                              '[Aa]rsenic|[Ll]ithium|[Ss]elenium')) %>%
-            filter(GM_RESULT_MODIFIER == '='),
-        .id = 'source') %>%
-  dplyr::mutate(across(source, 
-                ~str_extract_all(.x, 
-                                 'fresno|madera|mariposa|merced|kings|kern|tulare')))
-
-GAMA_WQ_summ = 
-  GAMA_WQ %>%
-  select(c(GM_WELL_ID, GM_SAMP_COLLECTION_DATE, 
-           GM_CHEMICAL_NAME, GM_RESULT)) %>%
-  pivot_wider(id_cols = c(GM_WELL_ID, GM_SAMP_COLLECTION_DATE),
-              names_from = GM_CHEMICAL_NAME,
-              values_from = GM_RESULT,
-              values_fn = mean) 
-
-save(GAMA_WQ_summ, 
-     file = here::here('geochemical_data/','GAMAWQData.Rda'))
