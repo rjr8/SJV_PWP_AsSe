@@ -3,25 +3,33 @@ library(lubridate)
 library(fs)
 library(sf)
 library(sp)
+library(here)
 library(gstat)
 library(raster)
+library(terra)
 
+
+
+# Setup -------------------------------------------------------------------
 
 # Establish directory
-here::i_am('SJV_Composition.Rproj')
+here::i_am('SJV_PWP_AsSe.Rproj')
 
 # Load script of custom functions
 source('Rcustomfunctions.R')
 
 
+# Load and Process GAMA Data ----------------------------------------------
+
+
 # Load all GAMA GW stations
-load(here('geospatial_data','AllGWStas.Rda')) 
+load(here::here('geospatial_data','AllGWStas.Rda')) 
 
 # Load all GAMA GW level measurements
-load(here('geospatial_data','AllGWlevels.Rda')) 
+load(here::here('geospatial_data','AllGWlevels.Rda')) 
 
 # Find data observation periods for each station 
-ObsPeriods= 
+ObsPeriods = 
   AllGWlevels %>%
   group_by(SITE_CODE) %>%
   summarise(startDate = min(MSMT_DATE),
@@ -52,7 +60,7 @@ dupWells = # find duplicated wells, pull site IDs of deeper duplicates
   group_by(LATITUDE, LONGITUDE) %>%
   arrange(WELL_DEPTH, .by_group = TRUE) %>%
   slice(2:n()) %>%
-  select(SITE_CODE) %>% pull()
+  dplyr::select(SITE_CODE) %>% pull()
 
 uniqueWells = 
   AvgGWLevels %>%
@@ -64,25 +72,26 @@ SJVwells_sf =
   # Reproject to NAD_1983_California_Teale_Albers (meters)
   st_transform(., crs = 3310)
 
+
+# Write well data to file
 st_write(SJVwells_sf, 
-         here('geospatial_data/shapefiles/','SJVgwWells.shp'))
+         here::here('geospatial_data/shapefiles/','SJVgwWells.shp'))
 
 
-## Kriging
+
+# Interpolate Water Table Surface via Kriging -----------------------------
+
 
 # convert sf to sp
 SJVwells_sp = as_Spatial(SJVwells_sf)
 
 # create a grid of sampling points 
 grd = 
-  expand.grid(lon = seq(-120.75, -118.75, by = 0.05), 
-              lat = seq(35.0, 37.0, by = 0.05))
+  expand.grid(y = seq(-335250, -112250, by = 500), 
+              x = seq(-68500, 114000, by = 500))
 
 grd_sf =
-  st_as_sf(grd, coords = c("lon", "lat"), 
-           crs = 4326, agr = "constant") %>%
-  # Reproject to NAD_1983_California_Teale_Albers (meters)
-  st_transform(., crs = 3310)
+  st_as_sf(grd, coords = c("x", "y"), crs = 3310, agr = "constant") 
 
 grd_sp = as_Spatial(grd_sf)
 
@@ -100,13 +109,53 @@ plot(SJV.vgm, SJV.fit)
 SJV.WL.krige = 
   krige((WLBLS_avg)~1, SJVwells_sp, grd_sp, model = SJV.fit)
 
-# Map it
-Krige_sf =
-  SJV.WL.krige %>% 
-  as.data.frame %>%
-  st_as_sf(., coords = c('coords.x1', 'coords.x2'), crs = 3310)
-  # project to NAD_1983_California_Teale_Albers (meters)
-  
-# write as shapefile
 
-st_write(Krige_sf, here('geospatial_data/shapefiles/','WaterTable.shp'))
+# Convert krige results to SpatVector 
+Krige_sv = 
+  st_as_sf(SJV.WL.krige, coords = c('coords.x1', 'coords.x2'), crs = 3310) %>%
+  dplyr::select(-var1.var) %>%
+  terra::vect(.)
+
+# Create a 500m resolution raster grid
+SJV_WaterTable_cells = terra::rast(Krige_sv, res = 500)
+
+# Fill grid with krige results, extract interpolated water 
+# table surface to sample locations
+SJV.WaterTable = 
+  terra::rasterize(Krige_sv, SJV_WaterTable_cells, 
+                   "var1.pred", touches = TRUE) %>%
+  terra::extract(., 
+                 read_sf(here::here('geospatial_data/shapefiles/', 
+                                    'SJVCompSamps.shp'))) %>%
+  setNames(., c('Rast_ID', 'WLBLS'))
+
+# write data
+save(SJV.WaterTable, 
+     file = here::here('geospatial_data','SJVwaterTable.Rda'))
+
+
+# gw qual -----------------------------------------------------------------
+
+GAMA_WQ = 
+  fs::dir_ls(here::here('geochemical_data/GW_data/'),
+             regexp = '*.txt', recurse = FALSE) %>%
+  map_dfr(~read_tsv(., col_names = TRUE) %>%
+            filter(str_detect(GM_CHEMICAL_NAME, 
+                              '[Aa]rsenic|[Ll]ithium|[Ss]elenium')) %>%
+            filter(GM_RESULT_MODIFIER == '='),
+        .id = 'source') %>%
+  dplyr::mutate(across(source, 
+                ~str_extract_all(.x, 
+                                 'fresno|madera|mariposa|merced|kings|kern|tulare')))
+
+GAMA_WQ_summ = 
+  GAMA_WQ %>%
+  select(c(GM_WELL_ID, GM_SAMP_COLLECTION_DATE, 
+           GM_CHEMICAL_NAME, GM_RESULT)) %>%
+  pivot_wider(id_cols = c(GM_WELL_ID, GM_SAMP_COLLECTION_DATE),
+              names_from = GM_CHEMICAL_NAME,
+              values_from = GM_RESULT,
+              values_fn = mean) 
+
+save(GAMA_WQ_summ, 
+     file = here::here('geochemical_data/','GAMAWQData.Rda'))

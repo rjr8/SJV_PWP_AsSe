@@ -1,0 +1,149 @@
+DATABASE C:\Program Files (x86)\USGS\Phreeqc Interactive 3.6.2-15100\database\llnl.dat
+SOLUTION 1 Antelope Hills
+    temp      27
+    pH        7.6
+    pe        4
+    redox     pe
+    units     ppm
+    density   1
+    Alkalinity 2200
+    As        13 ppb
+    B         18
+    Ba        1.1
+    C(4)      2562
+    Ca        15
+    Cl        3700
+    Fe        0.18
+    K         30
+    Li        0.515
+    Mg        12
+    Mn        14 ppb
+    Na        3350
+    S(6)      42
+    Se        41.3 ppb
+    Sr        3.2
+    N(5)      4.14205
+    -water    1 # kg
+
+
+END
+
+SOLUTION 2 Belgian Anticline
+    temp      21
+    pH        7.77
+    pe        4
+    redox     pe
+    units     ppm
+    density   1
+    Alkalinity 930
+    As        49 ppb        N(-03)/N(5)
+    B         63
+    Ba        3.5
+    Br        33
+    C(4)      1134.6
+    Ca        240
+    Cl        8600
+    Fe        0.21 
+    K         97
+    Li        2.5
+    Mg        86
+    Mn        180 ppb
+    N(-03)    100
+    N(5)      15.062
+    Na        5600
+    S(6)      150
+    Se        160 ppb        N(-03)/N(5)
+    Sr        7
+    -water    1 # kg
+
+END
+
+
+SOLUTION 4 Coalinga
+    temp      21
+    pH        7.36
+    pe        4
+    redox     pe
+    units     ppm
+    density   1
+    Alkalinity 705
+    As        8.95 ppb
+    B         58.5
+    Ba        0.225
+    Br        8.5
+    C(4)      854
+    Ca        41
+    Cl        1600
+    Fe        0.105
+    K         46
+    Li        0.75
+    Mg        33
+    Mn        108 ppb
+    Na        1550
+    S(6)      620
+    Se        21 ppb
+    Sr        1.6
+    N(-3)     23.01
+    N(5)      4.43
+    -water    1 # kg
+
+END
+
+
+SOLUTION 6 Edison
+    temp      25
+    pH        7.8
+    pe        4
+    redox     pe
+    units     ppm
+    density   1
+    Alkalinity 380
+    As        26 ppb        N(-03)/N(5)
+    B         13
+    Ba        1.2
+    C(4)      479.46
+    Ca        150
+    Cl        1900
+    Fe        2.4
+    K         18
+    Li        0.61
+    Mg        23
+    Mn        140 ppb
+    N(-03)    2
+    N(5)      10.4
+    Na        1200
+    S(6)      1.8
+    Se        31 ppb        N(-03)/N(5)
+    Sr        2.7
+    -water    1 # kg
+
+END
+
+
+SOLUTION 9 Midway-Sunset
+    temp      25
+    pH        7.8
+    pe        4
+    redox     pe
+    units     ppm
+    density   1
+    Alkalinity 1518
+    As        29 ppb        N(-03)/N(5)
+    B         52
+    Ba        2.785
+    C(4)      1852
+    Ca        72.5
+    Cl        6774
+    Fe        1.605
+    K         64.8
+    Li        3.6
+    Mg        40.65
+    Mn        150 ppb
+    N(-03)    45.9
+    N(5)      1.7
+    Na        4378
+    S(6)      67.5
+    Se        72 ppb        N(-03)/N(5)
+    Sr        6.8
+    -water    1 # kg
+END
