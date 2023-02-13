@@ -678,18 +678,6 @@ tunegrid = expand.grid(mtry = 1:21)
 ```
 
 
-```{r UNCESS}
-
-ctrl = 
-  trainControl(method = 'repeatedcv', 
-               number = 10, # 10 folds
-               repeats = 5, # 5 repeated 10-fold CV
-               selectionFunction = 'oneSE') # select best model considering
-                                      # the % change in RMSE as mtry increases
-
-```
-
-
 #### Build RFR Models for Log10 Transformed Data
 
 ```{r Caret run random forests log 10}
