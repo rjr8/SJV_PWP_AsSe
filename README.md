@@ -1,4 +1,5 @@
 # SJV_PWP_AsSe
+[![DOI](https://zenodo.org/badge/557502551.svg)](https://zenodo.org/badge/latestdoi/557502551)
 
 Within this repository are all the files needed to replicate the analysis. The  folder structure is:
 
